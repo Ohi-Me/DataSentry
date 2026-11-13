@@ -1,0 +1,108 @@
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: mypy packages services tools
+        continue-on-error: true   # typing is being tightened package by package
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - name: Unit tests
+        run: python -m pytest tests/unit -q
+      - name: Integration tests (the closed loop, end to end)
+        run: python -m pytest tests/integration -q
+
+  guarantees:
+    # Its own job so the log-safety and evidence-binding guarantees cannot be
+    # lost in a noisy suite. If these fail, two of the load-bearing claims in
+    # the README are no longer true.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - run: python -m pytest tests/unit/test_redaction.py tests/unit/test_guardrails.py tests/unit/test_security_invariants.py -q
+      - name: Provider guarantees survive a change of vendor
+        # The evidence envelope, the uncited-claim drop and the closed action
+        # enum are asserted against every hosted provider by the same
+        # parametrised tests. A new vendor that skipped one would land here.
+        run: python -m pytest tests/unit/test_providers.py -q
+      - name: The public playground stays bounded, rate limited and unaudited
+        run: python -m pytest tests/unit/test_playground.py -q
+
+  console:
+    # The console has no build step, which is a feature and a hazard: nothing
+    # would otherwise notice an unbalanced paren until a browser did. Parsing
+    # every module is the cheapest possible substitute for a bundler.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Every console module parses
+        run: |
+          fail=0
+          for f in $(find web/assets/js -name '*.js'); do
+            if ! node --input-type=module --check < "$f"; then
+              echo "::error file=$f::module does not parse"
+              fail=1
+            fi
+          done
+          exit $fail
+
+  environment:
+    # `ds doctor` is the command a new contributor runs first. If it cannot
+    # itself run on a clean machine, it is worse than not existing.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - name: doctor reports a clean environment with no credentials
+        run: python ds.py doctor --offline
+      - name: the CLI is importable and every subcommand is wired
+        run: python ds.py faults
+
+  image:
+    # A Dockerfile that has never been built is a deployment guide, not a
+    # deployment. This builds it and starts it, which is the only way to find
+    # out that the non-root user cannot write /data.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t datasentry:ci .
+      - name: the container serves /healthz
+        run: |
+          docker run -d --name ds -p 8787:8787 -e DS_HOST=0.0.0.0 datasentry:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8787/healthz; then ok=1; break; fi
+            sleep 2
+          done
+          docker logs ds
+          test "${ok:-0}" = "1"
+      - name: readiness reports an unseeded control plane rather than failing
+        run: |
+          curl -fsS http://127.0.0.1:8787/readyz | tr -d ' ' | grep -q '"seeded":false'
+      - run: docker rm -f ds

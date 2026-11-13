@@ -1,0 +1,42 @@
+# Fly.io. `fly launch --no-deploy` once to claim the app name, then:
+#
+#   fly volumes create datasentry_data --size 1
+#   fly secrets set GROQ_API_KEY=...
+#   fly deploy
+#
+# The volume is the same requirement as everywhere else: without it the
+# control plane lives on an ephemeral rootfs and does not survive a deploy.
+
+app = "datasentry"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DS_HOST = "0.0.0.0"
+  DS_PORT = "8787"
+  DS_DATA_DIR = "/data"
+  DS_DB_PATH = "/data/datasentry.db"
+  DS_WAREHOUSE_PATH = "/data/warehouse.db"
+  DS_LOG_JSON = "1"
+
+[[mounts]]
+  source = "datasentry_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  # One machine. The control plane is a single SQLite file, so a second
+  # machine on the same volume is not a scale-out -- it is two writers.
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/healthz"

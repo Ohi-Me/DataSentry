@@ -1,0 +1,223 @@
+/* Reset, layout shell, navigation, typography. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  color: var(--text);
+  /* The page is the pad: a minor grid every 24px and a major rule every
+     fifth line, the way engineering paper is printed. Kept faint enough
+     that it is texture behind the data rather than competition for it. */
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--pad-grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pad-grid-major) 1px, transparent 1px),
+    linear-gradient(var(--pad-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pad-grid) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The display face is condensed, so it wants weight and a touch of open
+   tracking rather than the tight negative tracking a wide grotesque needs.
+   Condensed at 700 reads as a label on a crate; at 400 it reads as fine
+   print, which is the opposite of what a heading is for. */
+h1, h2, h3, h4 {
+  margin: 0; font-family: var(--font-display); font-weight: 700;
+  letter-spacing: 0.005em; line-height: 1.08;
+}
+h1 { font-size: var(--t-2xl); font-weight: 800; }
+h2 { font-size: var(--t-lg); }
+h3 { font-size: var(--t-md); letter-spacing: 0.01em; }
+p  { margin: 0 0 var(--s3); }
+a  { color: inherit; text-decoration: none; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+::selection { background: var(--accent-soft); color: var(--text); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.skip-link {
+  position: absolute; left: -9999px; top: var(--s3); z-index: 999;
+  padding: var(--s2) var(--s4); background: var(--surface);
+  border: 1px solid var(--accent-line); border-radius: var(--r-md);
+}
+.skip-link:focus { left: var(--s3); }
+
+.mono { font-family: var(--font-mono); font-size: 0.9em; letter-spacing: 0; }
+.num  { font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-muted); }
+.dim   { color: var(--text-dim); }
+.faint { color: var(--text-faint); }
+.nowrap { white-space: nowrap; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- shell */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* Flat, on the canvas colour. The separation between rail and content comes
+   from the content surfaces being lighter than the page, which is what keeps
+   this theme calm -- a gradient panel here would be the loudest thing on a
+   screen whose whole point is that the incident is the loudest thing. */
+.rail {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: var(--s6);
+  padding: var(--s6) var(--s4);
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: var(--s3); padding: var(--s1) var(--s2); }
+.brand-mark {
+  width: 34px; height: 34px; flex: none; padding: 6px; border-radius: var(--r-sm);
+  background: var(--accent); color: var(--accent-ink);
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-text strong {
+  font-family: var(--font-stencil); font-size: 1.25rem;
+  font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  line-height: 1;
+}
+.brand-text em {
+  font-style: normal; font-size: 10px; color: var(--text-faint);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s2) var(--s4); border-radius: var(--r-control);
+  color: var(--text-muted); font-size: var(--t-base); font-weight: 450;
+  letter-spacing: -0.008em;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  position: relative;
+}
+.nav a svg {
+  width: 17px; height: 17px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.nav a:hover { background: var(--accent-soft); color: var(--text); }
+/* The selected item is the ink pill -- the same shape and fill as a primary
+   action, because "you are here" and "press this" are the same emphasis. */
+.nav a.is-active { background: var(--accent); color: var(--accent-ink); font-weight: 500; }
+.nav-badge {
+  margin-left: auto; font-size: var(--t-xs); font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 8px; border-radius: var(--r-control);
+  background: var(--surface-3); color: var(--text-dim);
+}
+.nav a.is-active .nav-badge {
+  background: rgba(255, 255, 255, 0.18); color: var(--accent-ink);
+}
+html[data-theme="dark"] .nav a.is-active .nav-badge {
+  background: rgba(14, 19, 22, 0.14); color: var(--accent-ink);
+}
+.nav-badge:empty { display: none; }
+.nav-badge--warn { background: var(--warn-soft); color: var(--warn); }
+
+.rail-foot { margin-top: auto; display: flex; align-items: center; gap: var(--s3); }
+
+.theme-toggle {
+  width: 36px; height: 36px; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); border-radius: var(--r-control);
+  background: transparent; cursor: pointer; color: var(--text-muted);
+  transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease),
+              background var(--fast) var(--ease);
+}
+.theme-toggle:hover { color: var(--text); background: var(--accent-soft); border-color: var(--accent-line); }
+.theme-toggle svg {
+  width: 16px; height: 16px; fill: none; stroke: currentColor;
+  stroke-width: 1.7; stroke-linecap: round;
+}
+html[data-theme="dark"] .icon-sun { display: none; }
+html[data-theme="light"] .icon-moon { display: none; }
+
+.live {
+  display: flex; align-items: center; gap: var(--s2);
+  font-size: var(--t-xs); color: var(--text-faint); letter-spacing: 0.02em;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-faint); flex: none;
+}
+.live.is-live .live-dot { background: var(--good); box-shadow: 0 0 0 3px var(--good-soft); }
+.live.is-live .live-text { color: var(--good); }
+.live.is-down .live-dot { background: var(--bad); }
+
+/* --------------------------------------------------------------- main */
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  height: var(--topbar-h); flex: none;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s5);
+  padding: 0 var(--s6);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.crumbs { display: flex; align-items: center; gap: var(--s2); min-width: 0; font-size: var(--t-base); }
+.crumbs a { color: var(--text-dim); }
+.crumbs a:hover { color: var(--text); }
+.crumbs span.sep { color: var(--text-faint); }
+.crumbs strong { font-family: var(--font-display); font-weight: 700; font-size: var(--t-lg);
+                 letter-spacing: 0.01em; }
+
+.topbar-actions { display: flex; align-items: center; gap: var(--s3); }
+
+.search {
+  display: flex; align-items: center; gap: var(--s2);
+  padding: 0 var(--s4); height: 36px; min-width: 300px;
+  border: 1px solid var(--line-strong); border-radius: var(--r-control);
+  background: var(--surface);
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+.search:focus-within { border-color: var(--accent-line); box-shadow: var(--glow); }
+.search svg {
+  width: 15px; height: 15px; flex: none; fill: none;
+  stroke: var(--text-faint); stroke-width: 1.8; stroke-linecap: round;
+}
+.search input {
+  flex: 1; min-width: 0; border: 0; background: none; outline: none;
+  font-size: var(--t-sm); color: var(--text);
+}
+.search input::placeholder { color: var(--text-faint); }
+.search kbd {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-faint);
+  border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+}
+
+.view { flex: 1; min-height: 0; padding: var(--s7) var(--s6) var(--s8); }
+
+@media (max-width: 1080px) {
+  .app { grid-template-columns: 68px minmax(0, 1fr); }
+  .brand-text, .nav a span, .nav-badge, .live-text { display: none; }
+  .rail { padding: var(--s4) var(--s2); align-items: center; }
+  .nav a { justify-content: center; }
+  .search { min-width: 180px; }
+}
+
+@media (max-width: 720px) {
+  .view { padding: var(--s4); }
+  .topbar { padding: 0 var(--s4); }
+  .search { display: none; }
+}

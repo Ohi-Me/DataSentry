@@ -1,0 +1,104 @@
+/* Chart palette.
+ *
+ * These are NOT the UI chrome tokens. Chart marks live on their own validated
+ * scale, because "it matches the theme" and "a reader with deuteranopia can
+ * tell the two marks apart" are different questions and only one of them is
+ * checkable. Every value below is run through tools/design/palette_check.py
+ * against the real surface colour in both modes. The binding constraint is
+ * marker/critical under protanopia: dE 17.2 light, 22.6 dark, against a floor
+ * of 15.
+ *
+ * Roles, not hues:
+ *   series    the measured signal
+ *   marker    a change event -- always a dashed rule WITH a visible label
+ *   critical  an anomaly -- a reserved status colour, always ringed and
+ *             named in the legend, never colour alone
+ *
+ * Three marks is the cap for an all-pairs form. A fourth would need a facet
+ * or a fold to "other", not a new hue.
+ *
+ * Re-validated for the inspection-bench identity. The marks now come from
+ * the identity rather than sitting beside it: the series is drawn in pencil
+ * graphite, a change marker is stamp ink, and an anomaly is the reject red
+ * -- so a chart in the console reads like the control chart on the landing
+ * page. Contrast against the pad surface rose (series 4.2:1 -> 10.6:1). The
+ * binding constraint moved: series/critical under protanopia is dE 16.2
+ * light against a floor of 15, because protanopia darkens the reject red
+ * toward the graphite. It clears, and it is the pair to watch; critical
+ * marks are also always ringed and labelled, so colour is never the only
+ * cue.
+ *
+ *   tools/design/palette_check.py holds the check. Run it after touching any
+ *   value here or any surface token in tokens.css.
+ */
+
+.viz {
+  --viz-surface: var(--surface);
+  --viz-series: #2e3d41;
+  --viz-series-soft: rgba(46, 61, 65, 0.12);
+  --viz-marker: #3730a3;
+  --viz-critical: #c62d42;
+  --viz-good: #0ca30c;
+  --viz-warning: #fab219;
+  --viz-grid: var(--line);
+  --viz-text: var(--text-dim);
+  --viz-text-faint: var(--text-faint);
+}
+
+html[data-theme="dark"] .viz {
+  --viz-series: #cfdcd3;
+  --viz-series-soft: rgba(207, 220, 211, 0.14);
+  --viz-marker: #a5a0ff;
+  --viz-critical: #ff6b7d;
+}
+
+/* Chart chrome is recessive: the data is the loudest thing on the plot. */
+.viz .axis-line { stroke: var(--viz-grid); stroke-width: 1; }
+.viz .grid-line { stroke: var(--viz-grid); stroke-width: 1; stroke-dasharray: 2 6; }
+.viz .tick-text { font-size: 9.5px; fill: var(--viz-text-faint); font-family: var(--font-mono); }
+.viz .axis-title { font-size: 10px; fill: var(--viz-text); }
+
+.viz .series-line { fill: none; stroke: var(--viz-series); stroke-width: 2;
+                    stroke-linejoin: round; stroke-linecap: round; }
+.viz .series-band { fill: var(--viz-series-soft); }
+.viz .marker-rule { stroke: var(--viz-marker); stroke-width: 1.6; stroke-dasharray: 4 3; }
+.viz .marker-label { font-size: 9.5px; fill: var(--viz-marker); font-weight: 650; }
+.viz .anomaly-mark { fill: var(--viz-critical); stroke: var(--viz-surface); stroke-width: 2; }
+
+.viz .bar { fill: var(--viz-series); rx: 4; }
+.viz .bar--critical { fill: var(--viz-critical); }
+.viz .bar-label { font-size: 10px; fill: var(--viz-text); }
+.viz .value-label { font-size: 10px; fill: var(--text); font-variant-numeric: tabular-nums; }
+
+.viz .dot { fill: var(--viz-series); stroke: var(--viz-surface); stroke-width: 2; }
+.viz .dot--over { fill: var(--viz-critical); }
+.viz .identity-line { stroke: var(--viz-text-faint); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.viz .point-label { font-size: 9.5px; fill: var(--viz-text); font-family: var(--font-mono); }
+
+.viz .crosshair { stroke: var(--viz-text-faint); stroke-width: 1; stroke-dasharray: 2 3; }
+.viz .hit { fill: transparent; }
+
+.viz-legend {
+  display: flex; gap: var(--s4); flex-wrap: wrap; margin-top: var(--s3);
+  font-size: var(--t-xs); color: var(--text-dim);
+}
+.viz-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.viz-legend .swatch-line { width: 16px; height: 2px; border-radius: 1px; }
+.viz-legend .swatch-dash { width: 16px; height: 0; border-top: 2px dashed currentColor; }
+.viz-legend .swatch-dot { width: 9px; height: 9px; border-radius: 50%;
+                          box-shadow: 0 0 0 2px var(--surface); }
+
+.viz-tip {
+  position: absolute; pointer-events: none; z-index: 5;
+  padding: var(--s2) var(--s3); border-radius: var(--r-md);
+  background: var(--surface); border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-md); font-size: var(--t-xs); min-width: 130px;
+  opacity: 0; transition: opacity var(--fast) var(--ease);
+}
+.viz-tip.is-on { opacity: 1; }
+.viz-tip b { display: block; font-family: var(--font-mono); color: var(--text); }
+.viz-tip dl { display: grid; grid-template-columns: auto auto; gap: 1px var(--s3); margin: 4px 0 0; }
+.viz-tip dt { color: var(--text-faint); }
+.viz-tip dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+
+.viz-frame { position: relative; }

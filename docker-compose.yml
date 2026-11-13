@@ -1,0 +1,42 @@
+# The one-command local run, for people who would rather not install Python.
+#
+#   docker compose up --build        console at http://localhost:8787
+#   docker compose run --rm datasentry python ds.py demo
+#
+# Everything the app writes lands in the named volume, so `down` and `up`
+# keep the control plane and `down -v` starts over.
+#
+# The production-shaped stack -- Postgres, Redpanda, MinIO, Grafana -- is a
+# separate file: infra/docker/docker-compose.yml.
+
+name: datasentry
+
+services:
+  datasentry:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      DS_HOST: 0.0.0.0
+      DS_PORT: "8787"
+      DS_DATA_DIR: /data
+      DS_DB_PATH: /data/datasentry.db
+      DS_WAREHOUSE_PATH: /data/warehouse.db
+      DS_LOG_JSON: "0"
+      DS_LLM_PROVIDER: auto
+    # Read from a local .env if present; absent is fine.
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - datasentry-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8787/healthz',timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  datasentry-data:

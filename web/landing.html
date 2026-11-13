@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en" data-page="landing" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DataSentry — quality control for the data your pipelines produce</title>
+<meta name="description" content="Every job passed and the numbers are still wrong. DataSentry inspects the data itself, traces a regression to the SQL that caused it, and shows who is affected — with evidence you can check.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%233730a3'/%3E%3Cpath d='M16 5.5l8.5 3.8v6.9c0 5.3-3.6 9.8-8.5 11-4.9-1.2-8.5-5.7-8.5-11V9.3L16 5.5z' fill='none' stroke='%23f6f9f4' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M11.5 16.3l3.2 3.2 5.8-6.2' fill='none' stroke='%23edc14a' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script>
+  // Before first paint, so the page never flashes the wrong theme. Shares
+  // the console's key, so a choice made on one is kept on the other.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("ds.theme"); } catch (e) {}
+    if (!t && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+    document.documentElement.setAttribute("data-theme", t || "light");
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&amp;family=Atkinson+Hyperlegible+Next:wght@400;500;700&amp;family=Big+Shoulders:opsz,wght@10..72,500..800&amp;family=Big+Shoulders+Stencil:opsz,wght@10..72,800&amp;display=swap">
+<noscript><link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&amp;family=Atkinson+Hyperlegible+Next:wght@400;500;700&amp;family=Big+Shoulders:opsz,wght@10..72,500..800&amp;family=Big+Shoulders+Stencil:opsz,wght@10..72,800&amp;display=swap"></noscript>
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/landing/landing.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <a class="wordmark" href="/" aria-label="DataSentry home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4l10 4.4v7.8C26 22.3 21.7 27.8 16 29 10.3 27.8 6 22.3 6 16.2V8.4L16 4z"/><path class="tick" d="M11 16.4l3.4 3.4L21 12.9"/></svg>
+    <span>DataSentry</span>
+  </a>
+  <nav class="bar-nav" aria-label="Sections">
+    <a href="#problem">The problem</a>
+    <a href="#line">How it works</a>
+    <a href="#lab">Try it</a>
+    <a href="#certificate">Evidence</a>
+  </nav>
+  <div class="bar-end">
+    <button class="theme" id="theme" type="button" aria-label="Switch between day and night theme">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z"/></svg>
+    </button>
+    <a class="btn btn-stamp" href="/console">Open the console</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================================================================ hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Control chart <span class="sep">/</span> <span class="mono">fct_revenue.revenue</span> <span class="sep">/</span> one reading every three hours</p>
+      <h1 id="hero-title">Every job passed.<br><em>Revenue doubled anyway.</em></h1>
+      <p class="lede">DataSentry inspects the data your pipelines produce, not whether they ran. It flags the change nobody wrote a test for, traces it to the SQL that caused it, and shows who reads the broken numbers — with evidence you can check.</p>
+      <div class="hero-actions">
+        <a class="btn btn-stamp" href="#lab">Inspect your own SQL</a>
+        <a class="btn btn-line" href="/console">Open the console</a>
+      </div>
+    </div>
+
+    <figure class="bench" id="bench">
+      <div class="bench-head">
+        <span class="job" id="job-status">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>
+          dbt build <span class="mono">214 of 214 models passed</span>
+        </span>
+        <span class="legend" aria-hidden="true">
+          <span><i class="k-cl"></i>centre</span>
+          <span><i class="k-lim"></i>control limits</span>
+          <span><i class="k-out"></i>out of control</span>
+        </span>
+      </div>
+
+      <div class="chart-wrap">
+        <svg id="chart" class="chart" role="img" aria-labelledby="chart-desc" preserveAspectRatio="none"></svg>
+        <p id="chart-desc" class="sr-only">A control chart of revenue readings with a centre line and upper and lower control limits. The latest reading is draggable.</p>
+
+        <div class="tag" id="tag" aria-hidden="true">
+          <span class="tag-hole"></span>
+          <span class="tag-stamp" id="tag-stamp">In control</span>
+          <span class="tag-line" id="tag-reading"></span>
+          <span class="tag-line tag-small" id="tag-p"></span>
+        </div>
+      </div>
+
+      <figcaption class="instrument">
+        <span class="hint" id="hint">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M4.5 5.5L8 2l3.5 3.5M4.5 10.5L8 14l3.5-3.5"/></svg>
+          Drag the latest reading — or use the arrow keys on it
+        </span>
+        <label class="alpha">
+          <span>False-alarm target</span>
+          <input type="range" id="alpha" min="0" max="4" step="1" value="3" aria-describedby="alpha-note">
+          <output id="alpha-out" for="alpha">2%</output>
+        </label>
+        <button class="btn btn-line btn-sm" id="own-toggle" type="button" aria-expanded="false" aria-controls="own">Use my own numbers</button>
+      </figcaption>
+
+      <div class="own" id="own" hidden>
+        <label for="own-series">Paste at least 31 readings, oldest first. Commas, spaces or new lines. The last one is the reading under inspection.</label>
+        <textarea id="own-series" rows="3" spellcheck="false" placeholder="1204, 1187, 1221, 1196, …"></textarea>
+        <div class="own-actions">
+          <button class="btn btn-stamp btn-sm" id="own-apply" type="button">Inspect these readings</button>
+          <button class="btn btn-line btn-sm" id="own-reset" type="button">Back to the example</button>
+          <span class="own-msg" id="own-msg" role="status"></span>
+        </div>
+      </div>
+
+      <p class="readout" id="readout" aria-live="polite"></p>
+      <p class="method" id="alpha-note">Limits are computed on the server by the same conformal calibrator the detectors run in production — split conformal prediction over robust scores, <span class="mono">|x − median| / MAD</span>.</p>
+    </figure>
+  </section>
+
+  <!-- ============================================================= problem -->
+  <section class="problem" id="problem" aria-labelledby="problem-title">
+    <div class="section-head">
+      <h2 id="problem-title">What a passing job doesn’t check</h2>
+      <p>A job status tells you the SQL ran. It says nothing about whether the rows it wrote are the rows you meant. These are three of the nine failures DataSentry’s test harness injects into a synthetic warehouse. Every one of them exits zero.</p>
+    </div>
+
+    <div class="specimens">
+      <article class="specimen" style="--tilt:-1.2deg">
+        <span class="tag-hole"></span>
+        <p class="spec-code mono">JOIN_SEMANTICS</p>
+        <h3>A join that fans out</h3>
+        <svg class="spark" viewBox="0 0 200 56" aria-hidden="true" data-spark="step-up"></svg>
+        <dl>
+          <dt>Job status</dt><dd class="ok">Success</dd>
+          <dt>dbt tests</dt><dd class="ok">42 of 42 passed</dd>
+          <dt>What happened</dt><dd>A new join to <span class="mono">addresses</span> matched customers with two addresses twice. Their revenue doubled.</dd>
+        </dl>
+        <p class="caught">Caught by the volume and drift detectors, then traced to the join by the semantic diff of the SQL.</p>
+      </article>
+
+      <article class="specimen" style="--tilt:0.8deg">
+        <span class="tag-hole"></span>
+        <p class="spec-code mono">UNIT_CHANGE</p>
+        <h3>Cents became dollars</h3>
+        <svg class="spark" viewBox="0 0 200 56" aria-hidden="true" data-spark="drop"></svg>
+        <dl>
+          <dt>Job status</dt><dd class="ok">Success</dd>
+          <dt>dbt tests</dt><dd class="ok">42 of 42 passed</dd>
+          <dt>What happened</dt><dd>An upstream team started sending dollars. The model still divides by 100, so every amount is a hundred times too small — and still a valid number.</dd>
+        </dl>
+        <p class="caught">Caught by the distribution detector: the quantiles moved, the schema didn’t.</p>
+      </article>
+
+      <article class="specimen" style="--tilt:-0.5deg">
+        <span class="tag-hole"></span>
+        <p class="spec-code mono">NULL_FLOOD</p>
+        <h3>A third of regions went blank</h3>
+        <svg class="spark" viewBox="0 0 200 56" aria-hidden="true" data-spark="nulls"></svg>
+        <dl>
+          <dt>Job status</dt><dd class="ok">Success</dd>
+          <dt>dbt tests</dt><dd class="ok">42 of 42 passed</dd>
+          <dt>What happened</dt><dd>A source API began returning null for <span class="mono">region</span>. Nobody had put <span class="mono">not_null</span> on that column.</dd>
+        </dl>
+        <p class="caught">Caught by the null-rate detector, which knows this column’s normal rate from its own history.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================ line -->
+  <section class="line" id="line" aria-labelledby="line-title">
+    <div class="section-head">
+      <h2 id="line-title">The inspection line</h2>
+      <p>Every column passes the same six stations, in this order. Statistics decide what is unusual. A reasoner explains it, but only with evidence it can cite. Ordinary, deterministic code decides what happens next.</p>
+    </div>
+
+    <ol class="stations" id="stations" role="tablist" aria-label="Inspection stations"></ol>
+    <div class="station-panel" id="station-panel" role="tabpanel" tabindex="0"></div>
+  </section>
+
+  <!-- ================================================================= lab -->
+  <section class="lab" id="lab" aria-labelledby="lab-title">
+    <div class="section-head">
+      <h2 id="lab-title">Inspect a change to your SQL</h2>
+      <p>Paste a model before and after a change, or start from one of these. DataSentry’s own lineage resolver and semantic diff run on it — no catalog, no warehouse connection, and nothing you paste is stored.</p>
+    </div>
+
+    <div class="presets" id="presets" role="group" aria-label="Example changes"></div>
+    <p class="story" id="story"></p>
+
+    <div class="editors">
+      <label class="editor">
+        <span class="editor-head">Before</span>
+        <textarea id="sql-before" spellcheck="false" autocomplete="off" rows="16"></textarea>
+      </label>
+      <label class="editor">
+        <span class="editor-head">After <span class="faint">the change</span></span>
+        <textarea id="sql-after" spellcheck="false" autocomplete="off" rows="16"></textarea>
+      </label>
+    </div>
+    <div class="lab-actions">
+      <button class="btn btn-stamp" id="inspect" type="button">Inspect the change</button>
+      <span class="lab-msg" id="lab-msg" role="status"></span>
+    </div>
+
+    <div class="report" id="report" hidden>
+      <div class="report-verdict">
+        <div class="stamp" id="report-stamp">Breaking</div>
+        <p class="report-headline" id="report-headline"></p>
+        <ul class="changes" id="changes"></ul>
+      </div>
+      <figure class="lineage">
+        <figcaption>
+          <span>Column lineage of the changed model</span>
+          <span class="faint mono" id="coverage"></span>
+        </figcaption>
+        <svg id="lineage" class="lineage-svg" role="img" aria-label="Column lineage from source tables to output columns"></svg>
+        <ul class="impact-key" aria-label="Key">
+          <li><i class="i-changed"></i>value computed differently</li>
+          <li><i class="i-rowset"></i>aggregated over different rows</li>
+          <li><i class="i-rows"></i>same value, different rows</li>
+        </ul>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ========================================================= certificate -->
+  <section class="evidence" id="certificate" aria-labelledby="cert-title">
+    <div class="section-head">
+      <h2 id="cert-title">Measured, not asserted</h2>
+      <p>This instance scores itself against faults it injected with known answers, and publishes the result — including where it falls short. The certificate below is read live from its health endpoints each time the page loads.</p>
+    </div>
+
+    <article class="cert" id="cert" aria-live="polite">
+      <header class="cert-head">
+        <div>
+          <p class="cert-kicker">Certificate of measurement</p>
+          <h3>DataSentry, this instance</h3>
+        </div>
+        <dl class="cert-meta">
+          <dt>Issued</dt><dd id="cert-issued">—</dd>
+          <dt>Method</dt><dd>injected faults and decoys, scored against ground truth</dd>
+          <dt>Sample</dt><dd id="cert-sample">—</dd>
+        </dl>
+      </header>
+      <table class="cert-table">
+        <thead><tr><th scope="col">Measurement</th><th scope="col">Specification</th><th scope="col">Measured</th><th scope="col">Result</th></tr></thead>
+        <tbody id="cert-rows"><tr><td colspan="4" class="faint">Reading the instance…</td></tr></tbody>
+      </table>
+      <div class="cert-seal" aria-hidden="true">Measured<br>not<br>asserted</div>
+    </article>
+  </section>
+
+  <!-- ================================================================= run -->
+  <section class="run" aria-labelledby="run-title">
+    <div>
+      <h2 id="run-title">Run the whole line on your laptop</h2>
+      <p>Python 3.11 and nothing else. It builds a sixty-table warehouse, breaks it six ways, and catches what it can in under three minutes. A free Groq or Gemini key makes the reasoning a language model’s; without one, a deterministic reasoner does the same job.</p>
+    </div>
+    <div class="terminal">
+      <div class="terminal-head">
+        <span>terminal</span>
+        <button class="copy" id="copy" type="button" data-copy="run-cmd">Copy</button>
+      </div>
+      <pre id="run-cmd"><code>git clone https://github.com/Ohi-Me/DataSentry
+cd DataSentry
+py ds.py demo
+py ds.py serve --open</code></pre>
+    </div>
+    <nav class="run-links" aria-label="More">
+      <a href="/console">Open the console <span aria-hidden="true">→</span></a>
+      <a href="https://github.com/Ohi-Me/DataSentry" rel="noopener">Source on GitHub <span aria-hidden="true">→</span></a>
+      <a href="/api/docs">API reference <span aria-hidden="true">→</span></a>
+    </nav>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span class="wordmark wordmark--small" aria-hidden="true"><span>DataSentry</span></span>
+  <span>Statistics detect. The reasoner explains. Deterministic code acts.</span>
+  <span class="mono faint">MIT licence</span>
+</footer>
+
+<script type="module" src="/assets/landing/landing.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+/* Design tokens -- "the inspection bench".
+ *
+ * DataSentry is a quality inspector for data, so the identity is taken from
+ * the instruments of quality control rather than from software dashboards:
+ *
+ *   pad       engineering computation paper -- the pale green, gridded pad
+ *             that control charts have been drawn on for a century
+ *   graphite  the pencil the chart is drawn in
+ *   stamp     rubber-stamp ink; the one colour that means "act here"
+ *   reject    the out-of-control mark. Reserved: it appears only where a
+ *             reading has actually breached its limits
+ *   tag       inspection-tag stock. Only on tags, never as a fill for chrome
+ *
+ * Two rules outrank the aesthetic, as they did in the previous theme:
+ *
+ *   1. Severity is never encoded by colour alone. Every severity carries a
+ *      glyph and a label.
+ *   2. Chart marks are not chrome. They live on their own validated scale in
+ *      viz.css and are re-checked against these surfaces by
+ *      tools/design/palette_check.py.
+ *
+ * Night shift (dark) is the same bench under a lamp: the pad goes to a deep
+ * green-black, graphite becomes chalk, and the stamp brightens so it keeps
+ * its role as the single action colour.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* -- identity ------------------------------------------------------ */
+  --pad: #e6eee4;
+  --pad-grid: rgba(62, 118, 78, 0.09);
+  --pad-grid-major: rgba(62, 118, 78, 0.17);
+  --graphite: #1c2427;
+  --stamp: #3730a3;
+  --stamp-deep: #282186;
+  --reject: #c62d42;
+  --tag: #edc14a;
+  --tag-edge: #c99a24;
+  --tag-ink: #33280a;
+
+  /* Kept by name for the components that address a step directly. */
+  --ink-900: #111719;
+  --ink-800: #1c2427;
+  --ink-700: #2c3739;
+  --ink-600: #3f4c4d;
+  --ink-500: #56645f;
+  --ink-400: #5f6c67;
+  --ink-300: #9aa89f;
+  --ink-200: #c4d0c6;
+  --ink-100: #dbe4d9;
+  --ink-050: #f6f9f4;
+
+  --red-600: #a8243a;
+  --red-500: #c62d42;
+  --red-400: #dc6475;
+  --amber-600: #875607;
+  --amber-500: #8f5a09;
+  --amber-400: #c98f2e;
+  --green-600: #1f6647;
+  --green-500: #2b7a56;
+  --green-400: #4e9a76;
+  --slate-600: #34586f;
+  --slate-500: #3f6a86;
+  --slate-400: #6a91ab;
+  --violet-500: #3730a3;
+  --violet-400: #6760cf;
+
+  /* -- semantic ------------------------------------------------------ */
+  --bg: var(--pad);
+  --bg-raised: #edf3eb;
+  --surface: #f6f9f4;
+  --surface-2: #edf3ea;
+  --surface-3: #e0e9dd;
+  --line: rgba(28, 36, 39, 0.12);
+  --line-strong: rgba(28, 36, 39, 0.24);
+
+  --text: var(--graphite);
+  --text-muted: rgba(28, 36, 39, 0.76);
+  --text-dim: #4e5b57;
+  --text-faint: #5a6762;
+
+  --accent: var(--stamp);
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(55, 48, 163, 0.08);
+  --accent-line: rgba(55, 48, 163, 0.38);
+
+  --sev1: var(--reject);
+  --sev2: var(--amber-500);
+  --sev3: var(--slate-500);
+  --sev4: var(--ink-400);
+
+  --good: var(--green-500);
+  --warn: var(--amber-500);
+  --bad: var(--reject);
+  --info: var(--slate-500);
+
+  --good-soft: rgba(43, 122, 86, 0.11);
+  --warn-soft: rgba(143, 90, 9, 0.12);
+  --bad-soft: rgba(198, 45, 66, 0.10);
+  --info-soft: rgba(63, 106, 134, 0.11);
+  --violet-soft: rgba(31, 111, 120, 0.11);
+  /* Code-change artefacts -- commits, SQL diffs. Deep teal, so evidence
+     never reads as the stamp that means "act". */
+  --evidence-accent: #1f6f78;
+
+  /* -- type ---------------------------------------------------------- */
+  /* Display: Big Shoulders, a condensed grotesque drawn from Chicago's
+     civic signage -- the lettering of labels and crate markings. Its
+     stencil cut is kept for the wordmark and for stamps only.
+     Body: Atkinson Hyperlegible Next, designed for legibility first, which
+     is the right priority for a tool people read at two in the morning.
+     Data: its Mono sibling, so numbers and prose share a skeleton. */
+  --font-sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", ui-sans-serif,
+               system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Big Shoulders", "Big Shoulders Display", "Arial Narrow",
+                  "Roboto Condensed", "Helvetica Neue", sans-serif;
+  --font-stencil: "Big Shoulders Stencil", "Big Shoulders Stencil Display",
+                  var(--font-display);
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "Cascadia Code",
+               "SF Mono", Menlo, Consolas, monospace;
+
+  --t-xs: 0.6875rem;
+  --t-sm: 0.78125rem;
+  --t-base: 0.875rem;
+  --t-md: 0.9375rem;
+  --t-lg: 1.125rem;
+  --t-xl: 1.625rem;
+  --t-2xl: 2.25rem;
+  --t-3xl: 3rem;
+
+  /* -- space --------------------------------------------------------- */
+  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+  --s5: 20px; --s6: 28px; --s7: 36px; --s8: 48px; --s9: 64px;
+
+  /* Instruments have edges. Surfaces are barely rounded, controls are cut
+     like label stock, and nothing is a pill. */
+  --r-sm: 3px; --r-md: 4px; --r-lg: 6px; --r-xl: 8px; --r-full: 999px;
+  --r-control: 3px;
+
+  --rail-w: 248px;
+  --topbar-h: 64px;
+
+  /* Paper does not float. Shadows are a hairline offset, like a sheet
+     lying on another sheet. */
+  --shadow-sm: 0 1px 0 rgba(28, 36, 39, 0.08);
+  --shadow-md: 0 2px 0 rgba(28, 36, 39, 0.07), 0 6px 18px rgba(28, 36, 39, 0.06);
+  --shadow-lg: 0 3px 0 rgba(28, 36, 39, 0.08), 0 18px 48px rgba(28, 36, 39, 0.12);
+  --glow: 0 0 0 1px var(--accent-line);
+
+  --ease: cubic-bezier(0.22, 0.64, 0.34, 1);
+  --fast: 130ms;
+  --med: 220ms;
+  --slow: 420ms;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --pad: #0e1614;
+  --pad-grid: rgba(128, 204, 156, 0.045);
+  --pad-grid-major: rgba(128, 204, 156, 0.09);
+  --graphite: #dce7df;
+  --stamp: #a5a0ff;
+  --stamp-deep: #c3bfff;
+  --reject: #ff6b7d;
+  --tag: #e3b83f;
+  --tag-edge: #b38a1f;
+  --tag-ink: #2a2006;
+
+  --bg: var(--pad);
+  --bg-raised: #121c19;
+  --surface: #16211e;
+  --surface-2: #1b2824;
+  --surface-3: #23312c;
+  --line: rgba(214, 230, 220, 0.10);
+  --line-strong: rgba(214, 230, 220, 0.20);
+
+  --text: var(--graphite);
+  --text-muted: rgba(220, 231, 223, 0.78);
+  --text-dim: #a2b3a9;
+  --text-faint: #86998e;
+
+  --accent: var(--stamp);
+  --accent-ink: #15123d;
+  --accent-soft: rgba(165, 160, 255, 0.12);
+  --accent-line: rgba(165, 160, 255, 0.42);
+
+  --sev1: var(--reject);
+  --sev2: #e0a54a;
+  --sev3: #7fb0cf;
+  --sev4: #8a9c93;
+
+  --good: #5fc08f;
+  --warn: #e0a54a;
+  --bad: var(--reject);
+  --info: #7fb0cf;
+
+  --good-soft: rgba(95, 192, 143, 0.13);
+  --warn-soft: rgba(224, 165, 74, 0.13);
+  --bad-soft: rgba(255, 107, 125, 0.13);
+  --info-soft: rgba(127, 176, 207, 0.13);
+  --violet-soft: rgba(95, 184, 194, 0.14);
+  --evidence-accent: #5fb8c2;
+
+  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 0 rgba(0, 0, 0, 0.35), 0 8px 22px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 3px 0 rgba(0, 0, 0, 0.4), 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --fast: 0ms; --med: 0ms; --slow: 0ms; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

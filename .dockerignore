@@ -1,0 +1,24 @@
+.git
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+var
+evals/results
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.local
+node_modules
+docs
+*.md
+!README.md
+infra/terraform
+# The agent loads its prompts from these at runtime; never let a docs rule
+# above drop them from the image.
+!packages/datasentry_agent/prompts/*.md

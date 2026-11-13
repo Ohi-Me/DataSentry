@@ -1,0 +1,65 @@
+[project]
+name = "datasentry"
+version = "0.2.0"
+description = "Lakehouse reliability control plane: detect silent data regressions, trace them to a cited root cause, compute blast radius, remediate."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+# The runtime the console and API need. Everything below is already what a
+# FastAPI service carries; the detection and lineage packages deliberately add
+# nothing -- no numpy, no scipy, no sqlglot -- so the detection path has no
+# compiled dependency and starts instantly.
+dependencies = [
+  "fastapi>=0.115",
+  "pydantic>=2.9",
+  "uvicorn[standard]>=0.30",
+  "httpx>=0.27",
+  "websockets>=13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff==0.16.9", "mypy>=1.11"]
+# Swap the purpose-built SQL reader for sqlglot without touching a call site.
+sqlglot = ["sqlglot>=25"]
+
+[project.scripts]
+ds = "ds:main"
+
+[tool.setuptools]
+py-modules = ["ds"]
+
+[tool.setuptools.packages.find]
+where = ["packages", "."]
+include = ["datasentry_*", "services*", "tools*", "evals*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "packages"]
+addopts = "-q --strict-markers"
+filterwarnings = ["error::DeprecationWarning:datasentry_*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["packages", "services", "tools", "evals", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF", "BLE"]
+ignore = [
+  "E501",    # line length is handled by the formatter
+  "B008",    # FastAPI Depends() in defaults is the framework idiom
+  "RUF001",  # the prose in docstrings uses real punctuation
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"packages/datasentry_agent/providers/heuristic.py" = ["C901"]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "packages"
+ignore_missing_imports = true
+warn_unused_ignores = false
+disallow_untyped_defs = false

@@ -1,0 +1,56 @@
+# Render blueprint. New -> Blueprint in the Render dashboard, point it at this
+# repository, and it deploys as-is on the FREE plan.
+#
+# How the free plan works here: the Docker build runs the demo once and bakes
+# a seeded snapshot into the image, so every boot -- including a cold start
+# after the free plan spins down -- comes up with a populated warehouse,
+# incidents and lineage in milliseconds. What the free plan cannot do is
+# keep changes: its filesystem is ephemeral, so dispositions and audit-log
+# entries made through the console reset to the snapshot on the next restart.
+#
+# For a deployment that keeps its own history, switch `plan` to `starter` and
+# uncomment the `disk` block. The snapshot is only ever copied into an empty
+# data directory, so it seeds the disk on first boot and never touches it again.
+
+services:
+  - type: web
+    name: datasentry
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /healthz
+    autoDeploy: true
+
+    # disk:                 # needs plan: starter or above
+    #   name: datasentry-data
+    #   mountPath: /data
+    #   sizeGB: 1
+
+    envVars:
+      - key: DS_HOST
+        value: 0.0.0.0
+      - key: DS_DATA_DIR
+        value: /data
+      - key: DS_DB_PATH
+        value: /data/datasentry.db
+      - key: DS_WAREHOUSE_PATH
+        value: /data/warehouse.db
+      - key: DS_LOG_JSON
+        value: "1"
+      - key: DS_LLM_PROVIDER
+        value: auto
+      - key: DS_SNAPSHOT_DIR
+        value: /opt/datasentry/snapshot
+
+      # Set one of these in the Render dashboard. Both have a free tier.
+      # `sync: false` means Render prompts for the value instead of storing
+      # it in this file -- a key in version control is a key to rotate.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # Change this for any deployment that profiles real data. It is what
+      # makes the hashed sample values in a profile non-reversible.
+      - key: DS_PROFILE_SALT
+        generateValue: true
